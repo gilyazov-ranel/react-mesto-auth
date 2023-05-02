@@ -1,5 +1,5 @@
 import PopupWithForm from './PopupWithForm';
-import { useInput } from './useInput'
+import { useInput } from '../hooks/useInput'
 import { useState, useRef, useEffect } from 'react';
 
 export default function AddPlacePopup({ isOpen, onClose, onAddPlace }) {
@@ -34,7 +34,6 @@ export default function AddPlacePopup({ isOpen, onClose, onAddPlace }) {
         setErrorMessageAbout(e.target.validationMessage)
     }
 
-
     return (
         <PopupWithForm
             name='mesto'
@@ -43,8 +42,7 @@ export default function AddPlacePopup({ isOpen, onClose, onAddPlace }) {
             onClose={onClose}
             nameButton={"Создать"}
             onSubmit={handleSubmit}
-            onDisabled={!name.inputValid || !link.inputValid}
-        >
+            onDisabled={!name.inputValid || !link.inputValid}>
 
             <input
                 onChange={handleChangeName}
@@ -62,7 +60,6 @@ export default function AddPlacePopup({ isOpen, onClose, onAddPlace }) {
             />
 
             {((name.isDirty && name.isEmpty) || (name.isDirty && name.minLengthError)) && <span className="text-input-error popup__input-error popup__input-error_type_active">{errorMessageName}</span>}
-
 
             <input onChange={handleChangeLink}
                 onFocus={link.onFocus}

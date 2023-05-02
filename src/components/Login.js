@@ -38,7 +38,6 @@ export default function Login({ onLogin, onSignOut }) {
                         id="email" name="email" type="email"
                         className='data__input'
                         placeholder="Email">
-
                     </input>
 
                     <input
@@ -46,14 +45,12 @@ export default function Login({ onLogin, onSignOut }) {
                         id="password" name="password" type="password"
                         className='data__input'
                         placeholder="Пароль">
-
                     </input>
 
                     <button type='submit' onSubmit={handleSubmit} className='data__button'>Войти</button>
                 </form>
 
             </div>
-
 
         </>
     )

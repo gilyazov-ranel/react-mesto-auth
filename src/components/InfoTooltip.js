@@ -8,9 +8,11 @@ export default function InfoTooltip({ title, imageUnion, isOpen, onClose }) {
                 <button className="popup__close popup__close_form"
                     type="button"
                     aria-label="Закрыть всплывающее окно"
-                    onClick={onClose}
-                ></button>
+                    onClick={onClose}>
+                </button>
+
                 <img src={imageUnion} className="popup__union" alt={title} />
+
                 <h2 className="popup__info">
                     {title}
                 </h2>

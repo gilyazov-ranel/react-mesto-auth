@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useValidation } from './useValidation';
+import { useValidation } from '../hooks/useValidation';
 
 export function useInput(initalValue, validations) {
     const [value, setValue] = useState(initalValue);

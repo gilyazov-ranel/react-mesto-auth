@@ -26,8 +26,7 @@ function App() {
     const [isEditProfilePopupOpen, setEditProfilePopupOpen] = useState(false);
     const [isAddPlacePopupOpen, setAddPlacePopupOpen] = useState(false);
     const [isDeleteCardPopup, setDeleteCardPopup] = useState(false);
-    const [isSuccessForm, setSuccessForm] = useState(false);
-    const [isFailForm, setFailForm] = useState(false);
+    const [isFormResult, setFormResult] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
 
     const [selectedCard, setSelectedCard] = useState({});
@@ -35,32 +34,37 @@ function App() {
     const [cards, setCards] = useState([]);
     const [card, setCard] = useState({});
     const [userEmael, setUserEmail] = useState('');
+    const [popupTitle, setPopupTitle] = useState('');
+    const [union, setUnion] = useState('')
 
     const navigate = useNavigate();
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
-        api.getCurrentUser().then(items => {
-            setCurrentUser(items)
-        }).catch((err) => {
-            console.log(err);
-        });
+        if (token) {
+            api.getCurrentUser().then(items => {
+                setCurrentUser(items)
+            }).catch((err) => {
+                console.log(err);
+            });
+            api.getCard().then(card => {
+                setCards(card);
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
 
-        api.getCard().then(card => {
-            setCards(card);
-        }).catch((err) => {
-            console.log(err);
-        });
-    }, []);
+    }, [token]);
 
     useEffect(() => {
         handleTokenCheck();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
         document.addEventListener('keydown', onKeydown)
         return () => document.removeEventListener('keydown', onKeydown)
-    })
+    });
 
     function onKeydown({ key }) {
         switch (key) {
@@ -69,45 +73,44 @@ function App() {
                 break;
             // no default
         }
-    }
+    };
 
     function handleCardClick(card) {
         setSelectedCard(card);
-    }
+    };
 
     function handleSelectedCard(card) {
-        setCard(card)
-    }
+        setCard(card);
+    };
 
-    function closeAllPopups(e) {
+    function closeAllPopups() {
         setEditAvatarPopupOpen(false);
         setEditProfilePopupOpen(false);
         setAddPlacePopupOpen(false);
         setDeleteCardPopup(false);
-        setSuccessForm(false);
-        setFailForm(false);
+        setFormResult(false);
         setSelectedCard({});
-    }
+    };
 
     function handleEditAvatarClick() {
         setEditAvatarPopupOpen(true);
-    }
+    };
 
     function handleEditProfileClick() {
         setEditProfilePopupOpen(true);
-    }
+    };
 
     function handleAddPlaceClick() {
         setAddPlacePopupOpen(true);
-    }
+    };
 
     function handleDeleteCardClick() {
         setDeleteCardPopup(true)
-    }
+    };
 
     function handleLogin() {
         setLoggedIn(true)
-    }
+    };
 
     function handleCardLike(card) {
 
@@ -119,8 +122,8 @@ function App() {
             })
             .catch((err) => {
                 console.log(err);
-            });
-    }
+            })
+    };
 
     function handleCardDelete(card) {
         api.deleteCard(card._id)
@@ -130,8 +133,22 @@ function App() {
             })
             .catch((err) => {
                 console.log(err);
-            });
-    }
+            })
+    };
+
+    function handleErrorPopup() {
+        setFormResult(true);
+        setPopupTitle('Что-то пошло не так! Попробуйте ещё раз.');
+        setUnion(failUnion);
+    };
+
+    function handleSuccessPopop() {
+        setFormResult(true);
+        navigate('/sign-in', { replace: true });
+        setPopupTitle('Вы успешно зарегистрировались!');
+        setUnion(successUnion);
+    };
+
 
     function handleUpdateUser(items) {
         api.editProfiles(items)
@@ -141,8 +158,8 @@ function App() {
             })
             .catch((err) => {
                 console.log(err);
-            });
-    }
+            })
+    };
 
     function handleUpdateAvatar(items) {
         api.instalAvatar(items)
@@ -152,8 +169,8 @@ function App() {
             })
             .catch((err) => {
                 console.log(err);
-            });
-    }
+            })
+    };
 
     function handleAddPlaceSubmit(card) {
         api.createCard(card)
@@ -164,38 +181,37 @@ function App() {
             })
             .catch((err) => {
                 console.log(err);
-            });
-    }
+            })
+    };
 
     function handleRegister(form) {
         Auth.register(form).then((form) => {
-            // console.log(form);
-            if (form === undefined) {
-                setFailForm(true);
-                navigate('/sign-up', { replace: true });
-            } else {
-                setSuccessForm(true);
-                navigate('/sign-in', { replace: true });
+            if (form) {
+                handleSuccessPopop();
             }
         })
-    }
+            .catch((err) => {
+                console.log(err);
+                handleErrorPopup();
+            })
+    };
 
     function handleLoginUser(form) {
         Auth.authorize(form)
             .then((data) => {
                 if (data) {
-                    handleTokenCheck();
+                    setUserEmail(form.email);
                     handleLogin();
                     navigate('/', { replace: true });
-                } else {
-                    setFailForm(true);
                 }
             })
-            .catch(err => console.log(err));
-    }
+            .catch((err) => {
+                console.log(err);
+                handleErrorPopup();
+            })
+    };
 
     function handleTokenCheck() {
-        const token = localStorage.getItem('token');
         if (token) {
             Auth.checkToken(token).then((res) => {
                 if (res) {
@@ -225,7 +241,6 @@ function App() {
         <CurrentUserContext.Provider value={currentUser} >
             <Routes>
 
-
                 <Route path='/' element={<ProtectedRoute loggedIn={loggedIn}>
                     <Header
                         pageTitle='Выйти'
@@ -244,10 +259,8 @@ function App() {
                 } />
 
                 <Route path="*" element={loggedIn ? <Navigate to='/' replace /> : <Navigate to='/sign-in' replace />} />
-
                 <Route path='/sign-up' element={<Register onRegister={handleRegister} onSignOut={handleTransitionRegister} />} />
                 <Route path='/sign-in' element={<Login onLogin={handleLoginUser} onSignOut={handleTransitionLogin} />} />
-
 
             </Routes>
             <EditProfilePopup isOpen={isEditProfilePopupOpen}
@@ -275,17 +288,11 @@ function App() {
                 onClose={closeAllPopups} />
 
             <InfoTooltip
-                imageUnion={successUnion}
-                title='Вы успешно зарегистрировались!'
-                isOpen={isSuccessForm}
+                imageUnion={union}
+                title={popupTitle}
+                isOpen={isFormResult}
                 onClose={closeAllPopups} />
 
-            <InfoTooltip
-                imageUnion={failUnion}
-                title='Что-то пошло не так!
-                Попробуйте ещё раз.'
-                isOpen={isFailForm}
-                onClose={closeAllPopups} />
         </CurrentUserContext.Provider>
     );
 }
